@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::fmt;
 
 /// A flag for a posting or transaction.
@@ -13,21 +12,18 @@ use std::fmt;
 /// ```
 // TODO: Make sure that the variant Other("*") can't be created, since Other("*") != Okay
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Default)]
 pub enum Flag {
+    #[default]
     Okay,
     Warning,
     Other(String),
 }
 
-impl Default for Flag {
-    fn default() -> Self {
-        Flag::Okay
-    }
-}
 
 impl From<&str> for Flag {
     fn from(s: &str) -> Self {
-        match &*s {
+        match s {
             "*" | "txn" => Flag::Okay,
             "!" => Flag::Warning,
             _ => Flag::Other(s.to_owned()),

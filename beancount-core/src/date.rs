@@ -29,7 +29,7 @@ impl Date {
     }
 
     pub fn from_string_unchecked(s: String) -> Date {
-        Date(s.into())
+        Date(s)
     }
 
     pub fn from_cow_unchecked(s: Cow<'_, str>) -> Date {

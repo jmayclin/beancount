@@ -10,8 +10,5 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn main() {
-    match run() {
-        Err(e) => println!("Error: {}", e),
-        _ => {}
-    }
+    if let Err(e) = run() { println!("Error: {}", e) }
 }

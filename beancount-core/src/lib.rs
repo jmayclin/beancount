@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 
 use typed_builder::TypedBuilder;
 
@@ -21,6 +20,7 @@ pub mod flags;
 pub mod metadata;
 pub mod position;
 pub mod posting;
+pub mod render;
 
 /// Represents the complete ledger consisting of a number of directives.
 // TODO: Derive Hash when possible

@@ -33,6 +33,7 @@ pub struct Posting {
     pub account: Account,
 
     /// The amount being posted.
+    /// TODO: Remove this
     pub units: IncompleteAmount,
 
     /// The cost of this posting.

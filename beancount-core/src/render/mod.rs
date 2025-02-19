@@ -1,12 +1,8 @@
-use beancount_core::*;
+use crate::*;
 use metadata::MetaValue;
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::{io, io::Write};
 use thiserror::Error;
-
-#[cfg(test)]
-mod tests;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct BasicRenderer {}

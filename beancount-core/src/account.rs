@@ -1,6 +1,5 @@
 use typed_builder::TypedBuilder;
 
-use std::borrow::Cow;
 
 use super::account_types::AccountType;
 

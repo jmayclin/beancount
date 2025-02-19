@@ -1,4 +1,4 @@
-use crate::render;
+use beancount_core::render::render;
 use beancount_parser::parse;
 use indoc::indoc;
 
