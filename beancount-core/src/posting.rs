@@ -28,30 +28,30 @@ use super::position::CostSpec;
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.mtqrwt24wnzs>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Posting<'a> {
+pub struct Posting {
     /// Account being posted to.
-    pub account: Account<'a>,
+    pub account: Account,
 
     /// The amount being posted.
-    pub units: IncompleteAmount<'a>,
+    pub units: IncompleteAmount,
 
     /// The cost of this posting.
     #[builder(default)]
-    pub cost: Option<CostSpec<'a>>,
+    pub cost: Option<CostSpec>,
 
     /// The price of this posting.
     #[builder(default)]
-    pub price: Option<PriceSpec<'a>>,
+    pub price: Option<PriceSpec>,
 
     #[builder(default)]
-    pub flag: Option<Flag<'a>>,
+    pub flag: Option<Flag>,
 
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum PriceSpec<'a> {
-    PerUnit(IncompleteAmount<'a>),
-    Total(IncompleteAmount<'a>),
+pub enum PriceSpec {
+    PerUnit(IncompleteAmount),
+    Total(IncompleteAmount),
 }

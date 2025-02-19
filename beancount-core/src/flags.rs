@@ -13,41 +13,29 @@ use std::fmt;
 /// ```
 // TODO: Make sure that the variant Other("*") can't be created, since Other("*") != Okay
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub enum Flag<'a> {
+pub enum Flag {
     Okay,
     Warning,
-    Other(Cow<'a, str>),
+    Other(String),
 }
 
-impl Default for Flag<'_> {
+impl Default for Flag {
     fn default() -> Self {
         Flag::Okay
     }
 }
 
-impl<'a> From<&'a str> for Flag<'a> {
-    fn from(s: &'a str) -> Self {
-        Cow::from(s).into()
-    }
-}
-
-impl From<String> for Flag<'_> {
-    fn from(s: String) -> Self {
-        Cow::from(s).into()
-    }
-}
-
-impl<'a> From<Cow<'a, str>> for Flag<'a> {
-    fn from(s: Cow<'a, str>) -> Self {
+impl From<&str> for Flag {
+    fn from(s: &str) -> Self {
         match &*s {
             "*" | "txn" => Flag::Okay,
             "!" => Flag::Warning,
-            _ => Flag::Other(s),
+            _ => Flag::Other(s.to_owned()),
         }
     }
 }
 
-impl fmt::Display for Flag<'_> {
+impl fmt::Display for Flag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Flag::Okay => write!(f, "*"),

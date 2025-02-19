@@ -7,16 +7,16 @@ use super::Currency;
 
 /// A number of units of a certain commodity.
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder, Hash)]
-pub struct Amount<'a> {
+pub struct Amount {
     /// The value of the amount.
     pub num: Decimal,
 
     /// The commodity of the amount.
-    pub currency: Currency<'a>,
+    pub currency: Currency,
 }
 
-impl cmp::PartialOrd for Amount<'_> {
-    fn partial_cmp(&self, other: &Amount<'_>) -> Option<cmp::Ordering> {
+impl cmp::PartialOrd for Amount {
+    fn partial_cmp(&self, other: &Amount) -> Option<cmp::Ordering> {
         if self.currency == other.currency {
             self.num.partial_cmp(&other.num)
         } else {
@@ -27,18 +27,18 @@ impl cmp::PartialOrd for Amount<'_> {
 
 /// An amount that may have missing units and/or commodity.
 #[derive(Clone, Debug, Eq, PartialEq, Hash, TypedBuilder)]
-pub struct IncompleteAmount<'a> {
+pub struct IncompleteAmount {
     /// The (optional) value of the amount.
     #[builder(default)]
     pub num: Option<Decimal>,
 
     /// The (optional) commodity of the amount.
     #[builder(default)]
-    pub currency: Option<Currency<'a>>,
+    pub currency: Option<Currency>,
 }
 
-impl cmp::PartialOrd for IncompleteAmount<'_> {
-    fn partial_cmp(&self, other: &IncompleteAmount<'_>) -> Option<cmp::Ordering> {
+impl cmp::PartialOrd for IncompleteAmount {
+    fn partial_cmp(&self, other: &IncompleteAmount) -> Option<cmp::Ordering> {
         if self.currency == other.currency {
             self.num.partial_cmp(&other.num)
         } else {
@@ -47,10 +47,10 @@ impl cmp::PartialOrd for IncompleteAmount<'_> {
     }
 }
 
-impl<'a> TryFrom<IncompleteAmount<'a>> for Amount<'a> {
+impl TryFrom<IncompleteAmount> for Amount {
     type Error = ();
 
-    fn try_from(val: IncompleteAmount<'a>) -> Result<Self, Self::Error> {
+    fn try_from(val: IncompleteAmount) -> Result<Self, Self::Error> {
         match val {
             IncompleteAmount {
                 num: Some(num),
@@ -61,8 +61,8 @@ impl<'a> TryFrom<IncompleteAmount<'a>> for Amount<'a> {
     }
 }
 
-impl<'a> From<Amount<'a>> for IncompleteAmount<'a> {
-    fn from(val: Amount<'a>) -> Self {
+impl From<Amount> for IncompleteAmount {
+    fn from(val: Amount) -> Self {
         IncompleteAmount {
             num: Some(val.num),
             currency: Some(val.currency),

@@ -35,10 +35,10 @@ pub enum Booking {
     Lifo,
 }
 
-impl<'a> TryFrom<&'a str> for Booking {
+impl TryFrom<&str> for Booking {
     type Error = ();
 
-    fn try_from(val: &'a str) -> Result<Self, Self::Error> {
+    fn try_from(val: &str) -> Result<Self, Self::Error> {
         match val {
             "STRICT" => Ok(Booking::Strict),
             "STRICT_WITH_SIZE" => Ok(Booking::StrictWithSize),
@@ -53,22 +53,22 @@ impl<'a> TryFrom<&'a str> for Booking {
 
 /// Enum of all directive types.
 #[derive(Clone, Debug, PartialEq)]
-pub enum Directive<'a> {
-    Open(Open<'a>),
-    Close(Close<'a>),
-    Balance(Balance<'a>),
-    Option(BcOption<'a>),
-    Commodity(Commodity<'a>),
-    Custom(Custom<'a>),
-    Document(Document<'a>),
-    Event(Event<'a>),
-    Include(Include<'a>),
-    Note(Note<'a>),
-    Pad(Pad<'a>),
-    Plugin(Plugin<'a>),
-    Price(Price<'a>),
-    Query(Query<'a>),
-    Transaction(Transaction<'a>),
+pub enum Directive {
+    Open(Open),
+    Close(Close),
+    Balance(Balance),
+    Option(BcOption),
+    Commodity(Commodity),
+    Custom(Custom),
+    Document(Document),
+    Event(Event),
+    Include(Include),
+    Note(Note),
+    Pad(Pad),
+    Plugin(Plugin),
+    Price(Price),
+    Query(Query),
+    Transaction(Transaction),
     Unsupported,
 }
 
@@ -96,15 +96,15 @@ pub enum Directive<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.l0pvgeniwvq8>
 #[derive(Clone, Debug, PartialEq, TypedBuilder)]
-pub struct Balance<'a> {
+pub struct Balance {
     /// Date of the balance.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Account to check the balance of.
-    pub account: Account<'a>,
+    pub account: Account,
 
     /// Amount to balance.
-    pub amount: Amount<'a>,
+    pub amount: Amount,
 
     #[builder(default)]
     pub tolerance: Option<Decimal>,
@@ -112,11 +112,11 @@ pub struct Balance<'a> {
     // diff_amount: Option<Amount>,
     /// Metadata attached to the balance directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a Beancount `option`, which are configuration points global to the file.
@@ -136,19 +136,19 @@ pub struct Balance<'a> {
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.e2iyrfrmstl>
 
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct BcOption<'a> {
+pub struct BcOption {
     /// Name of the option.
-    pub name: Cow<'a, str>,
+    pub name: String,
 
     /// Value of the option.
-    pub val: Cow<'a, str>,
+    pub val: String,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
-impl<'a> BcOption<'a> {
+impl BcOption {
     /// Determines if the current option specifies a root account name change.
     /// For example, the following line will rename the 'Assets' root account to 'Activa':
     /// ```beancount
@@ -187,20 +187,20 @@ impl<'a> BcOption<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.wf248e8stnac>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Close<'a> {
+pub struct Close {
     /// Date the account was closed.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Account being closed.
-    pub account: Account<'a>,
+    pub account: Account,
 
     /// Metadata attached to the close directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `commodity` directive.  This directive allows you to declare commodities,
@@ -229,20 +229,20 @@ pub struct Close<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.a3si01ejc035>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Commodity<'a> {
+pub struct Commodity {
     /// Date the commodity was declared.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Commodity name.
-    pub name: Currency<'a>,
+    pub name: Currency,
 
     /// Metadata attached to the commodity directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `custom` directive, which is a generic directive provided to allow clients to
@@ -271,23 +271,23 @@ pub struct Commodity<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.20klpeqb6ajy>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Custom<'a> {
+pub struct Custom {
     /// Date associated with the custom directive.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Custom directive name.
-    pub name: Cow<'a, str>,
+    pub name: String,
 
     /// Arbitrary number of custom directive arguments.
-    pub args: Vec<Cow<'a, str>>,
+    pub args: Vec<String>,
 
     /// Metadata attached to the custom directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `document` directive.  A `document` directive can be used to attach an external
@@ -307,31 +307,31 @@ pub struct Custom<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.w1ins9jk4mq3>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Document<'a> {
+pub struct Document {
     /// Date the document was linked.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Account document is added to.
-    pub account: Account<'a>,
+    pub account: Account,
 
     /// Filesystem path to the document.
-    pub path: Cow<'a, str>,
+    pub path: String,
 
     /// Tags associated with the document.
     #[builder(default)]
-    pub tags: HashSet<Tag<'a>>,
+    pub tags: HashSet<Tag>,
 
     /// Links associated with the document.
     #[builder(default)]
-    pub links: HashSet<Link<'a>>,
+    pub links: HashSet<Link>,
 
     /// Metadata attached to the document directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents an `event` directive.  `event` directives are used to track the value of some
@@ -351,23 +351,23 @@ pub struct Document<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.tm5fxddlik5x>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Event<'a> {
+pub struct Event {
     /// Date the event occurred.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Name of the event.
-    pub name: Cow<'a, str>,
+    pub name: String,
 
     /// New value of the event.
-    pub description: Cow<'a, str>,
+    pub description: String,
 
     /// Metadata attached to the event directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents an `include` directive.  The `include` directive, as it sounds, includes another
@@ -387,13 +387,13 @@ pub struct Event<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.86lelow4097r>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Include<'a> {
+pub struct Include {
     /// Fully qualified filename, including any necessary path segments.
-    pub filename: Cow<'a, str>,
+    pub filename: String,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `note` directive.  A `note` directive is simply used to attach a dated comment to
@@ -413,23 +413,23 @@ pub struct Include<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.c4cyaa6o6rqm>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Note<'a> {
+pub struct Note {
     /// Date of the note.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Account being noted.
-    pub account: Account<'a>,
+    pub account: Account,
 
     /// Note description.
-    pub comment: Cow<'a, str>,
+    pub comment: String,
 
     /// Metadata attached to the note directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `open` directive.  This directive signifies the opening of an account.
@@ -447,17 +447,17 @@ pub struct Note<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.omdgvaikswd0>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Open<'a> {
+pub struct Open {
     /// Date the account was opened.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Account being opened.
-    pub account: Account<'a>,
+    pub account: Account,
 
     /// Commodities allowed for the opened account. An empty list means no restrictions on the
     /// allowed commodities.
     #[builder(default)]
-    pub currencies: Vec<Currency<'a>>,
+    pub currencies: Vec<Currency>,
 
     /// Booking method. The default booking method for accounts is
     /// [`Booking::Strict`](enum.Booking.html).
@@ -466,11 +466,11 @@ pub struct Open<'a> {
 
     /// Metadata attached to the open directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `pad` directive.  A `pad` directive automatically inserts a transaction that will
@@ -494,23 +494,23 @@ pub struct Open<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.aw8ic3d8k8rq>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Pad<'a> {
+pub struct Pad {
     /// Date of the pad.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Account to pad into.
-    pub pad_to_account: Account<'a>,
+    pub pad_to_account: Account,
 
     /// Account to pad from.
-    pub pad_from_account: Account<'a>,
+    pub pad_from_account: Account,
 
     /// Metadata attached to the pad directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `plugin` directive.
@@ -534,17 +534,17 @@ pub struct Pad<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.lxgs9ewvbt8k>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Plugin<'a> {
+pub struct Plugin {
     /// Full module name of the plugin.
-    pub module: Cow<'a, str>,
+    pub module: String,
 
     /// Configuration data to be passed to the plugin.
     #[builder(default)]
-    pub config: Option<Cow<'a, str>>,
+    pub config: Option<String>,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `price` directive, which establishes the rate of exchange between one commodity and
@@ -575,23 +575,23 @@ pub struct Plugin<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.f78ym1dxtemh>
 #[derive(Clone, Debug, PartialEq, TypedBuilder)]
-pub struct Price<'a> {
+pub struct Price {
     /// Date of the price specification.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// The commodity being priced (a.k.a the base commodity).
-    pub currency: Currency<'a>,
+    pub currency: Currency,
 
     /// Value the currency is being quoted at.
-    pub amount: Amount<'a>,
+    pub amount: Amount,
 
     /// Metadata attached to the price directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `query` directive.  `query` directives allow you to insert a query in the usual
@@ -615,23 +615,23 @@ pub struct Price<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.nw8fgvy4ub1w>
 #[derive(Clone, Debug, Eq, PartialEq, TypedBuilder)]
-pub struct Query<'a> {
+pub struct Query {
     /// Date on which the query should be run.
-    pub date: Date<'a>,
+    pub date: Date,
 
     /// Name of the query.
-    pub name: Cow<'a, str>,
+    pub name: String,
 
     /// Query contents.
-    pub query_string: Cow<'a, str>,
+    pub query_string: String,
 
     /// Metadata attached to the query directive.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     /// Source string from the parsed input
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }
 
 /// Represents a `txn` (or `*` or `!`) directive.
@@ -680,39 +680,39 @@ pub struct Query<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.up4dj751q84w>
 #[derive(Clone, Debug, PartialEq, TypedBuilder)]
-pub struct Transaction<'a> {
-    pub date: Date<'a>,
+pub struct Transaction {
+    pub date: Date,
 
     /// Whether or not a transaction is considered complete.
     ///
     /// `*` or `txn`: Completed transaction, known amounts, “this looks correct.”
     /// `!`: Incomplete transaction, needs confirmation or revision, “this looks incorrect.”
     #[builder(default=Flag::Okay)]
-    pub flag: Flag<'a>,
+    pub flag: Flag,
 
     /// Payee of this transaction.
     #[builder(default)]
-    pub payee: Option<Cow<'a, str>>,
+    pub payee: Option<String>,
 
     /// Narration of this transaction.
-    pub narration: Cow<'a, str>,
+    pub narration: String,
 
     /// Tags associated with the transaction.
     #[builder(default)]
-    pub tags: HashSet<Tag<'a>>,
+    pub tags: HashSet<Tag>,
 
     /// Links associated with the transactions.
     #[builder(default)]
-    pub links: HashSet<Link<'a>>,
+    pub links: HashSet<Link>,
 
     /// Postings belonging to this transaction.
     #[builder(default)]
-    pub postings: Vec<Posting<'a>>,
+    pub postings: Vec<Posting>,
 
     /// Metadata attached to the transaction.
     #[builder(default)]
-    pub meta: Meta<'a>,
+    pub meta: Meta,
 
     #[builder(default)]
-    pub source: Option<&'a str>,
+    pub source: Option<String>,
 }

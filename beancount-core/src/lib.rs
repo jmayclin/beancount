@@ -25,8 +25,8 @@ pub mod posting;
 /// Represents the complete ledger consisting of a number of directives.
 // TODO: Derive Hash when possible
 #[derive(Clone, Debug, PartialEq, Default, TypedBuilder)]
-pub struct Ledger<'a> {
-    pub directives: Vec<Directive<'a>>,
+pub struct Ledger {
+    pub directives: Vec<Directive>,
 }
 
-pub type Currency<'a> = Cow<'a, str>;
+pub type Currency = String;

@@ -7,11 +7,11 @@ use super::amount::Amount;
 use super::{Currency, Date};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, TypedBuilder)]
-pub struct Cost<'a> {
+pub struct Cost {
     pub number: Decimal,
-    pub currency: Currency<'a>,
-    pub date: Date<'a>,
-    pub label: Option<Cow<'a, str>>,
+    pub currency: Currency,
+    pub date: Date,
+    pub label: Option<String>,
 }
 
 // TODO: Important Note. Amounts specified as either per-share or total prices or costs are always
@@ -22,27 +22,27 @@ pub struct Cost<'a> {
 ///
 /// <https://docs.google.com/document/d/1wAMVrKIA2qtRGmoVDSUBJGmYZSygUaR0uOMW1GV3YE0/edit#heading=h.mtqrwt24wnzs>
 #[derive(Clone, Debug, Eq, PartialEq, Hash, TypedBuilder)]
-pub struct CostSpec<'a> {
+pub struct CostSpec {
     #[builder(default)]
     pub number_per: Option<Decimal>,
     #[builder(default)]
     pub number_total: Option<Decimal>,
     /// The type of commodity for this cost.
     #[builder(default)]
-    pub currency: Option<Currency<'a>>,
+    pub currency: Option<Currency>,
     /// The date of the at-cost.
     #[builder(default)]
-    pub date: Option<Date<'a>>,
+    pub date: Option<Date>,
     /// The label of the cost.
     #[builder(default)]
-    pub label: Option<Cow<'a, str>>,
+    pub label: Option<String>,
     /// Flag to indicate that all lots should be merged and average cost to be used
     #[builder(default)]
     pub merge_cost: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, TypedBuilder)]
-pub struct Position<'a> {
-    pub units: Amount<'a>,
-    pub cost: Option<Cost<'a>>,
+pub struct Position {
+    pub units: Amount,
+    pub cost: Option<Cost>,
 }
