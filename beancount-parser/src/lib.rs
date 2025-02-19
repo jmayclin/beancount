@@ -144,7 +144,7 @@ fn optional_rule<'i>(rule: Rule, pairs: &mut Pairs<'i, Rule>) -> Option<Pair<'i,
     }
 }
 
-pub fn parse<'i>(input: &'i str) -> ParseResult<bc::Ledger<'i>> {
+pub fn parse<'i>(input: &'i str) -> ParseResult<bc::Ledger> {
     let parsed = BeancountParser::parse(Rule::file, &input)?
         .next()
         .ok_or_else(|| ParseError::invalid_state("non-empty parse result"))?;
@@ -204,7 +204,7 @@ fn extract_tag<'i>(pair: Pair<'i, Rule>) -> ParseResult<&'i str> {
     Ok(&pair.as_str()[1..])
 }
 
-fn directive<'i>(directive: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::Directive<'i>> {
+fn directive<'i>(directive: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::Directive> {
     let dir = match directive.as_rule() {
         Rule::option => option_directive(directive)?,
         Rule::plugin => plugin_directive(directive)?,
@@ -226,24 +226,24 @@ fn directive<'i>(directive: Pair<'i, Rule>, state: &ParseState) -> ParseResult<b
     Ok(dir)
 }
 
-fn option_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive<'i>> {
+fn option_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Option(construct! {
         bc::BcOption: directive => {
             name = get_quoted_str;
             val = get_quoted_str;
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
 
-fn plugin_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive<'i>> {
+fn plugin_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Plugin(construct! {
         bc::Plugin: directive => {
             module = get_quoted_str;
             config ?= get_quoted_str;
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -251,31 +251,31 @@ fn plugin_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive<
 fn custom_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Custom(construct! {
         bc::Custom: directive => {
             date = date;
             name = get_quoted_str;
             args = if Rule::custom_value_list {
-                |p: Pair<'i, _>| -> ParseResult<Vec<Cow<'i, str>>> {
+                |p: Pair<'i, _>| -> ParseResult<Vec<String>> {
                     p.into_inner().map(get_quoted_str).collect()
                 }
             } else {
                 Vec::new()
             };
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
 
-fn include_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive<'i>> {
+fn include_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Include(construct! {
         bc::Include: directive => {
             filename = get_quoted_str;
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -283,7 +283,7 @@ fn include_directive<'i>(directive: Pair<'i, Rule>) -> ParseResult<bc::Directive
 fn open_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Open(construct! {
         bc::Open: directive => {
@@ -309,7 +309,7 @@ fn open_directive<'i>(
                 None
             };
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -317,14 +317,14 @@ fn open_directive<'i>(
 fn close_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Close(construct! {
         bc::Close: directive => {
             date = date;
             account = |p| account(p, state);
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -332,7 +332,7 @@ fn close_directive<'i>(
 fn balance_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Balance(construct! {
         bc::Balance: directive => {
@@ -344,7 +344,7 @@ fn balance_directive<'i>(
             amount := amt;
             tolerance := tol;
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -352,14 +352,14 @@ fn balance_directive<'i>(
 fn commodity_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Commodity(construct! {
         bc::Commodity: directive => {
             date = date;
             name = as_str;
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -367,7 +367,7 @@ fn commodity_directive<'i>(
 fn note_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Note(construct! {
         bc::Note: directive => {
@@ -375,7 +375,7 @@ fn note_directive<'i>(
             account = |p| account(p, state);
             comment = as_str;
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -383,7 +383,7 @@ fn note_directive<'i>(
 fn pad_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Pad(construct! {
         bc::Pad: directive => {
@@ -391,7 +391,7 @@ fn pad_directive<'i>(
             pad_to_account = |p| account(p, state);
             pad_from_account = |p| account(p, state);
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -399,7 +399,7 @@ fn pad_directive<'i>(
 fn query_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Query(construct! {
         bc::Query: directive => {
@@ -407,7 +407,7 @@ fn query_directive<'i>(
             name = get_quoted_str;
             query_string = get_quoted_str;
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -415,7 +415,7 @@ fn query_directive<'i>(
 fn event_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Event(construct! {
         bc::Event: directive => {
@@ -423,7 +423,7 @@ fn event_directive<'i>(
             name = get_quoted_str;
             description = get_quoted_str;
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -431,7 +431,7 @@ fn event_directive<'i>(
 fn document_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Document(construct! {
         bc::Document: directive => {
@@ -446,7 +446,7 @@ fn document_directive<'i>(
             tags := tags;
             links := links;
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -454,7 +454,7 @@ fn document_directive<'i>(
 fn price_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Price(construct! {
         bc::Price: directive => {
@@ -462,7 +462,7 @@ fn price_directive<'i>(
             currency = as_str;
             amount = amount;
             meta = |p| meta_kv(p, state);
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
@@ -470,7 +470,7 @@ fn price_directive<'i>(
 fn transaction_directive<'i>(
     directive: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<bc::Directive<'i>> {
+) -> ParseResult<bc::Directive> {
     let source = directive.as_str();
     Ok(bc::Directive::Transaction(construct! {
         bc::Transaction: directive => {
@@ -489,15 +489,15 @@ fn transaction_directive<'i>(
                     (None, first)
                 }
             };
-            payee := payee;
-            narration := narration;
+            payee := payee.map(|cow| cow.to_string());
+            narration := narration.to_string();
             let (mut tags, mut links) = from pair if Rule::tags_links {
                 tags_links(pair)?
             } else {
                 (HashSet::new(), HashSet::new())
             };
             let (meta, postings) = from pair {
-                let mut postings: Vec<bc::Posting<'i>> = Vec::new();
+                let mut postings: Vec<bc::Posting> = Vec::new();
                 let mut tx_meta = bc::metadata::Meta::new();
                 for p in pair.into_inner() {
                     match p.as_rule() {
@@ -507,9 +507,9 @@ fn transaction_directive<'i>(
                         Rule::key_value => {
                             let (k, v) = meta_kv_pair(p, state)?;
                             if let Some(last) = postings.last_mut() {
-                                last.meta.insert(k, v);
+                                last.meta.insert(k.to_string(), v);
                             } else {
-                                tx_meta.insert(k, v);
+                                tx_meta.insert(k.to_string(), v);
                             }
                         }
                         Rule::tag => {
@@ -526,7 +526,7 @@ fn transaction_directive<'i>(
                     }
                 }
                 for tag in state.get_pushed_tags() {
-                  tags.insert(Cow::from((*tag).to_owned()));
+                  tags.insert(tag.to_string());
                 }
                 (tx_meta, postings)
             };
@@ -534,12 +534,12 @@ fn transaction_directive<'i>(
             meta := meta;
             tags := tags;
             links := links;
-            source := Some(source);
+            source := Some(source.to_owned());
         }
     }))
 }
 
-fn posting<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::Posting<'i>> {
+fn posting<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::Posting> {
     let span = pair.as_span();
     let mut inner = pair.into_inner();
     let flag = optional_rule(Rule::txn_flag, &mut inner)
@@ -610,7 +610,7 @@ fn num_expr(pair: Pair<'_, Rule>) -> ParseResult<Decimal> {
         .parse(pair.into_inner())
 }
 
-fn amount<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::Amount<'i>> {
+fn amount<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::Amount> {
     debug_assert!(pair.as_rule() == Rule::amount);
     Ok(construct! {
         bc::Amount: pair => {
@@ -620,7 +620,7 @@ fn amount<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::Amount<'i>> {
     })
 }
 
-fn amount_tolerance<'i>(pair: Pair<'i, Rule>) -> ParseResult<(bc::Amount<'i>, Option<Decimal>)> {
+fn amount_tolerance<'i>(pair: Pair<'i, Rule>) -> ParseResult<(bc::Amount, Option<Decimal>)> {
     debug_assert!(pair.as_rule() == Rule::amount_tolerance);
     let span = pair.as_span();
     let mut inner = pair.into_inner();
@@ -644,7 +644,7 @@ fn amount_tolerance<'i>(pair: Pair<'i, Rule>) -> ParseResult<(bc::Amount<'i>, Op
     ))
 }
 
-fn incomplete_amount<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::IncompleteAmount<'i>> {
+fn incomplete_amount<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::IncompleteAmount> {
     debug_assert!(pair.as_rule() == Rule::incomplete_amount);
     Ok(construct! {
         bc::IncompleteAmount: pair => {
@@ -662,7 +662,7 @@ fn incomplete_amount<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::IncompleteAmou
     })
 }
 
-fn cost_spec<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::CostSpec<'i>> {
+fn cost_spec<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::CostSpec> {
     debug_assert!(pair.as_rule() == Rule::cost_spec);
     let mut amount = (None, None, None);
     let mut date_ = None;
@@ -696,14 +696,14 @@ fn cost_spec<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::CostSpec<'i>> {
     Ok(bc::CostSpec::builder()
         .number_per(amount.0)
         .number_total(amount.1)
-        .currency(amount.2)
+        .currency(amount.2.map(|cow| cow.to_string()))
         .date(date_)
-        .label(label)
+        .label(label.map(|cow| cow.to_string()))
         .merge_cost(merge)
         .build())
 }
 
-fn price_annotation<'i>(pair: Pair<'i, Rule>) -> ParseResult<(bool, bc::IncompleteAmount<'i>)> {
+fn price_annotation<'i>(pair: Pair<'i, Rule>) -> ParseResult<(bool, bc::IncompleteAmount)> {
     debug_assert!(pair.as_rule() == Rule::price_annotation);
     let span = pair.as_span();
     let inner = pair
@@ -720,7 +720,7 @@ fn price_annotation<'i>(pair: Pair<'i, Rule>) -> ParseResult<(bool, bc::Incomple
     Ok((is_total, amount))
 }
 
-fn account<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::Account<'i>> {
+fn account<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::Account> {
     debug_assert!(pair.as_rule() == Rule::account);
     let span = pair.as_span();
     let mut inner = pair.into_inner();
@@ -743,18 +743,18 @@ fn account<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::Acco
             )
         })?;
     let parts: Vec<_> = inner.map(|p| Cow::Borrowed(&p.as_str()[1..])).collect();
-    Ok(bc::Account::builder().ty(account_type).parts(parts).build())
+    Ok(bc::Account::builder().ty(account_type).parts(parts.into_iter().map(|cow| cow.to_string()).collect()).build())
 }
 
 fn as_str<'i>(pair: Pair<'i, Rule>) -> ParseResult<&'i str> {
     Ok(pair.as_str())
 }
 
-fn date<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::Date<'i>> {
+fn date<'i>(pair: Pair<'i, Rule>) -> ParseResult<bc::Date> {
     Ok(bc::Date::from_str_unchecked(pair.as_str()))
 }
 
-fn meta_kv<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::metadata::Meta<'i>> {
+fn meta_kv<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::metadata::Meta> {
     debug_assert!(pair.as_rule() == Rule::eol_kv_list);
     pair.into_inner().map(|p| meta_kv_pair(p, state)).collect()
 }
@@ -762,8 +762,8 @@ fn meta_kv<'i>(pair: Pair<'i, Rule>, state: &ParseState) -> ParseResult<bc::meta
 fn tags_links<'i>(
     pair: Pair<'i, Rule>,
 ) -> ParseResult<(
-    HashSet<bc::metadata::Tag<'i>>,
-    HashSet<bc::metadata::Link<'i>>,
+    HashSet<bc::metadata::Tag>,
+    HashSet<bc::metadata::Link>,
 )> {
     let (mut tags, mut links) = (HashSet::new(), HashSet::new());
     for p in pair.into_inner() {
@@ -787,7 +787,7 @@ fn tags_links<'i>(
 fn meta_kv_pair<'i>(
     pair: Pair<'i, Rule>,
     state: &ParseState,
-) -> ParseResult<(Cow<'i, str>, bc::metadata::MetaValue<'i>)> {
+) -> ParseResult<(String, bc::metadata::MetaValue)> {
     debug_assert!(pair.as_rule() == Rule::key_value);
     let span = pair.as_span();
     let mut inner = pair.into_inner();
@@ -813,7 +813,7 @@ fn meta_kv_pair<'i>(
     Ok((key.into(), value))
 }
 
-fn get_quoted_str<'i>(pair: Pair<'i, Rule>) -> ParseResult<Cow<'i, str>> {
+fn get_quoted_str<'i>(pair: Pair<'i, Rule>) -> ParseResult<String> {
     debug_assert!(pair.as_rule() == Rule::quoted_str);
     let span = pair.as_span();
     Ok(pair
@@ -830,7 +830,7 @@ fn flag(pair: Pair<'_, Rule>) -> ParseResult<bc::Flag> {
 
 fn compound_amount<'i>(
     pair: Pair<'i, Rule>,
-) -> ParseResult<(Option<Decimal>, Option<Decimal>, Option<Cow<'i, str>>)> {
+) -> ParseResult<(Option<Decimal>, Option<Decimal>, Option<String>)> {
     let mut number_per = None;
     let mut number_total = None;
     let mut currency = None;
@@ -1158,7 +1158,7 @@ mod tests {
                         bc::Plugin::builder()
                             .module("beancount.plugins.module_name".into())
                             .config(None)
-                            .source(Some("plugin \"beancount.plugins.module_name\"\n"))
+                            .source(Some("plugin \"beancount.plugins.module_name\"\n".to_owned()))
                             .build()
                     ),
                     bc::Directive::Plugin(
@@ -1166,7 +1166,7 @@ mod tests {
                             .module("beancount.plugins.module_name2".into())
                             .config(Some("config".into()))
                             .source(Some(
-                                "plugin \"beancount.plugins.module_name2\" \"config\"\n"
+                                "plugin \"beancount.plugins.module_name2\" \"config\"\n".to_owned()
                             ))
                             .build()
                     )
@@ -1395,10 +1395,10 @@ mod tests {
                         .tags(
                             vec!["social", "alcohol"]
                                 .iter()
-                                .map(|a| Cow::from(*a))
-                                .collect::<HashSet<Tag<'_>>>()
+                                .map(|a| a.to_string())
+                                .collect::<HashSet<Tag>>()
                         )
-                        .source(Some(txn_source))
+                        .source(Some(txn_source.to_string()))
                         .build()
                 )]
             }
@@ -1487,14 +1487,14 @@ mod tests {
                         .tags(
                             vec!["tag"]
                                 .iter()
-                                .map(|a| Cow::from(*a))
-                                .collect::<HashSet<Tag<'_>>>()
+                                .map(|a| a.to_string())
+                                .collect::<HashSet<Tag>>()
                         )
                         .links(
                             vec!["link"]
                                 .iter()
-                                .map(|a| Cow::from(*a))
-                                .collect::<HashSet<Tag<'_>>>()
+                                .map(|a| a.to_string())
+                                .collect::<HashSet<Tag>>()
                         )
                         .postings(vec![bc::Posting::builder()
                             .account(
@@ -1523,7 +1523,7 @@ mod tests {
                                     .build()
                             )))
                             .build()])
-                        .source(Some(source))
+                        .source(Some(source.to_owned()))
                         .build()
                 )]
             }
@@ -1546,14 +1546,14 @@ mod tests {
                         .tags(
                             vec!["tag"]
                                 .iter()
-                                .map(|a| Cow::from(*a))
-                                .collect::<HashSet<Tag<'_>>>()
+                                .map(|a| a.to_string())
+                                .collect::<HashSet<Tag>>()
                         )
                         .links(
                             vec!["link"]
                                 .iter()
-                                .map(|a| Cow::from(*a))
-                                .collect::<HashSet<Tag<'_>>>()
+                                .map(|a| a.to_string())
+                                .collect::<HashSet<Tag>>()
                         )
                         .postings(vec![bc::Posting::builder()
                             .account(
@@ -1582,7 +1582,7 @@ mod tests {
                                     .build()
                             )))
                             .build()])
-                        .source(Some(source))
+                        .source(Some(source.to_owned()))
                         .build()
                 )]
             }
