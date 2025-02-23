@@ -50,7 +50,7 @@ impl Display for Date {
 }
 
 #[cfg(feature = "chrono")]
-impl From<NaiveDate> for Date<'_> {
+impl From<NaiveDate> for Date {
     fn from(d: NaiveDate) -> Self {
         Date::from_string_unchecked(d.format("%Y-%m-%d").to_string())
     }
